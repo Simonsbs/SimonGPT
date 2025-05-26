@@ -7,6 +7,27 @@ param(
     [int]   $Port          = 8080
 )
 
+# Load .env if ApiKey not provided
+if (-not $ApiKey) {
+    $envFile = Join-Path $PSScriptRoot ".env"
+    if (Test-Path $envFile) {
+        Write-Host "🔍 Reading .env for LLM_ROUTER_API_KEY..."
+        Get-Content $envFile | ForEach-Object {
+            if ($_ -match '^[ \t]*([^#=]+)[ \t]*=[ \t]*(.*)') {
+                $key = $matches[1].Trim()
+                $val = $matches[2].Trim('"')
+                if ($key -eq 'LLM_ROUTER_API_KEY') {
+                    $ApiKey = $val
+                }
+            }
+        }
+    }
+    if (-not $ApiKey) {
+        Write-Error "API key not set. Provide -ApiKey or add LLM_ROUTER_API_KEY to .env"
+        exit 1
+    }
+}
+
 Write-Host "⏳ Building Docker image '$ImageName'..."
 docker build -t $ImageName .
 if ($LASTEXITCODE -ne 0) {
