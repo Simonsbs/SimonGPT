@@ -1,5 +1,5 @@
 import os, uuid, openai, json
-from typing import List, Dict, Any, AsyncIterator
+from typing import AsyncIterator
 from .base import BaseAdapter
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
