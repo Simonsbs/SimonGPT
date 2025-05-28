@@ -4,19 +4,27 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install the native libmagic and dev headers, then the Python binding
+# Install OS‐level dependencies:
+#  • libmagic for file‐type detection
+#  • poppler-utils for pdftotext
+#  • libGL + glib for OpenCV (cv2) so inference-based PDF parsing loads
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       libmagic1 libmagic-dev \
+      poppler-utils \
+      libgl1-mesa-glx \
+      libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
+# Copy and install Python deps
 COPY requirements.txt .
-# Install your Python deps plus the python-magic binding
-RUN pip install --no-cache-dir -r requirements.txt python-magic
+RUN pip install --no-cache-dir \
+      -r requirements.txt \
+      python-magic \
+      "unstructured[pdf]"
 
-# Copy service code and .env
+# Copy your code + env
 COPY ingest.py watcher.py .env ./
 
-# Expose nothing (watcher runs in foreground)
-# Entrypoint: start the watcher
+# Run the watcher
 CMD ["python", "watcher.py"]

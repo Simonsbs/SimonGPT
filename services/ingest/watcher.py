@@ -1,10 +1,9 @@
-# D:\Projects\SimonGPT\services\ingest\watcher.py
 import os
 import time
 import asyncio
 import asyncpg
 from dotenv import load_dotenv
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver  # ← use polling
 from watchdog.events import FileSystemEventHandler
 
 # 1) Explicitly load the .env in this folder
@@ -64,8 +63,8 @@ def main():
             handler._delete_records(full_path)
             asyncio.run(ingest_file_async(full_path))
 
-    # 3) Start watching
-    observer = Observer()
+    # 3) Start watching with polling
+    observer = PollingObserver()
     observer.schedule(handler, WATCH_DIR, recursive=False)
     observer.start()
     print(f"[watcher] Now monitoring '{WATCH_DIR}' for changes. Press Ctrl+C to exit.")
