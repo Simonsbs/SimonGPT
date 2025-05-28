@@ -7,3 +7,6 @@ langchain-unstructured>=0.1.0
 watchdog>=3.0.0
 unstructured>=0.6.5
 libmagic
+python-docx
+pdfminer.six
+pillow
