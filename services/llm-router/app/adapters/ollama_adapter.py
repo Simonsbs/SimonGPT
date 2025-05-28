@@ -6,9 +6,28 @@ from .base import BaseAdapter
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://host.docker.internal:11434")
 
 class OllamaAdapter(BaseAdapter):
+    def __init__(self, model_name: str):
+        self.model_name = model_name
+
+    async def embed(self, inputs: list[str]) -> dict:
+        url = f"{OLLAMA_URL}/api/embed"
+        payload = {"model": self.model_name, "input": inputs}
+        logger.info(f"[OllamaAdapter] embed payload: {payload}")
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload)
+            logger.info(f"[OllamaAdapter] embed response status: {response.status_code}")
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"[OllamaAdapter] embed raw response: {data}")
+            return data
+
+
+
+    
     async def chat(self, messages: List[Dict[str, str]], temperature: float | None, max_tokens: int | None) -> Any:
         payload = {
             "model": self.model_name,

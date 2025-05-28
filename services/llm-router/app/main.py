@@ -1,4 +1,5 @@
 import importlib
+import logging
 from typing import Dict, List, Any
 
 from fastapi import FastAPI, HTTPException, Depends
@@ -99,3 +100,19 @@ async def chat(req: ChatRequest):
     # Non‐streaming: invoke the LangChain router dynamically
     result = await router_chain.ainvoke(inputs)
     return result
+
+class EmbeddingRequest(BaseModel):
+    model: str = Field(..., examples=["ollama:bge-m3"])
+    input: List[str] = Field(..., examples=[["What is Simon B. Stirling known for?"]])
+
+@app.post("/v1/embeddings")
+async def embeddings(req: EmbeddingRequest):
+    adapter = _load_adapter(req.model)
+    logger = logging.getLogger("router")
+
+    try:
+        result = await adapter.embed(req.input)
+        return result
+    except Exception as e:
+        logger.exception("embedding error")
+        raise HTTPException(500, detail="Embedding failed")
