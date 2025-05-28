@@ -1,0 +1,11 @@
+services:
+  ingest:
+    build: ./services/ingest
+    volumes:
+      - ./host-watched-folder:/watched # <-- this path must match WATCH_DIR=/watched
+    environment:
+      - VECTOR_DB_URL=${VECTOR_DB_URL}
+      - ROUTER_URL=${ROUTER_URL}
+      - ROUTER_API_KEY=${ROUTER_API_KEY}
+      - EMBED_MODEL=${EMBED_MODEL}
+      - WATCH_DIR=/watched
